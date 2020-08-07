@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <input id="new-item" type="text" placeholder="Typing here ...">
+  <button id="add-btn">Add</button>
+  <ul id="todo-list">
+
+  </ul>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    var collectionKey = 'todos';
+    var todoList =[];
+    var url = 'http://localhost:9001/todos'
+    
+    var addBtn = document.getElementById('add-btn');
+    var input = document.getElementById('new-item');
+    var warpList = document.getElementById('todo-list');
+
+    addBtn.addEventListener('click', addItem);
+    input.addEventListener('keypress', function(e) {
+      if (e.keyCode === 13 && input.value.trim()) return addItem();
+    });
+    warpList.addEventListener('click', onDelete)
+
+    function fetchData() {
+      axios.get(url).then(function(res) {
+        todoList = res.data
+        render()
+      })
+    }
+
+    function onDelete(e) {
+      let button = e.target;
+      let id = parseInt(button.dataset.id);
+      axios.delete(`${url}/${id}`).then(function (res) {
+        todoList = todoList.filter((item) => item.id !== id);
+        render()
+      })
+    }
+
+    function addItem() {
+      var newItem = {
+        content: input.value,
+      };
+      axios.post(url, newItem).then(function(res) {
+        todoList.push(res.data);
+        render();
+        input.value = '';
+      })
+    }
+
+    function render() {
+      warpList.innerHTML = todoList.map((item) => {
+        return `<li>${item.content} <button data-id="${item.id}">remove</button></li>`
+      }).join('');
+    }
+
+    fetchData();
+  </script>
+</body>
+</html>
